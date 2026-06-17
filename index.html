@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>색종이 빼기</title>
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="game-core.js"></script>
+    <script defer src="game.js"></script>
+  </head>
+  <body>
+    <main class="game-shell">
+      <div class="desk-props" aria-hidden="true">
+        <span class="desk-prop notebook"></span>
+        <span class="desk-prop ruler"></span>
+        <span class="desk-prop pencil pencil-one"></span>
+        <span class="desk-prop pencil pencil-two"></span>
+        <span class="desk-prop eraser"></span>
+        <span class="desk-prop tape"></span>
+        <span class="desk-prop clip clip-one"></span>
+        <span class="desk-prop clip clip-two"></span>
+        <span class="desk-prop sticky sticky-one"></span>
+        <span class="desk-prop sticky sticky-two"></span>
+      </div>
+
+      <section class="play-screen" aria-label="색종이 빼기 게임">
+        <header class="hud" aria-label="게임 상태">
+          <div class="hud-metric">
+            <span class="hud-label">점수</span>
+            <strong id="scoreValue">0</strong>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-label">최고</span>
+            <strong id="bestValue">0</strong>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-label">최대콤보</span>
+            <strong id="maxComboValue">0</strong>
+          </div>
+          <div class="hud-metric mistake-meter" aria-label="실수">
+            <span class="hud-label">실수</span>
+            <span id="mistakePips" class="mistake-pips" aria-hidden="true">
+              <span></span>
+            </span>
+          </div>
+          <button id="muteButton" class="icon-button" type="button" aria-label="소리 끄기" aria-pressed="false">
+            ♪
+          </button>
+        </header>
+
+        <div id="stage" class="stage" tabindex="-1" aria-live="polite">
+          <div class="paper-stack" aria-hidden="true">
+            <span class="paper-back paper-back-one" data-preview-index="0" data-paper="blue"></span>
+            <span class="paper-back paper-back-two" data-preview-index="1" data-paper="yellow"></span>
+            <span class="paper-back paper-back-three" data-preview-index="2" data-paper="orange"></span>
+          </div>
+
+          <article id="activePaper" class="paper active-paper" data-paper="red" aria-label="현재 색종이">
+            <span id="paperArrow" class="paper-arrow" aria-hidden="true">↑</span>
+          </article>
+
+          <p id="comboBadge" class="combo-badge" aria-live="polite" hidden></p>
+          <div id="comboGauge" class="combo-gauge" aria-hidden="true" hidden>
+            <span id="comboGaugeFill"></span>
+          </div>
+          <p id="feedback" class="feedback" aria-live="assertive"></p>
+        </div>
+
+        <nav class="control-pad" aria-label="방향 입력">
+          <button class="dir-button dir-up" type="button" data-direction="up" aria-label="위">↑</button>
+          <button class="dir-button dir-left" type="button" data-direction="left" aria-label="왼쪽">←</button>
+          <button class="dir-button dir-right" type="button" data-direction="right" aria-label="오른쪽">→</button>
+          <button class="dir-button dir-down" type="button" data-direction="down" aria-label="아래">↓</button>
+        </nav>
+      </section>
+
+      <section id="startScreen" class="overlay-screen is-active" aria-label="시작 화면">
+        <div class="dialog start-dialog">
+          <p class="eyebrow">HTML5</p>
+          <h1>색종이 빼기</h1>
+          <div class="intro-stack" aria-hidden="true">
+            <span class="intro-paper intro-red"></span>
+            <span class="intro-paper intro-blue"></span>
+            <span class="intro-paper intro-yellow"></span>
+            <span class="intro-paper intro-orange"></span>
+          </div>
+          <button id="startButton" class="primary-button" type="button">시작</button>
+        </div>
+      </section>
+
+      <section id="gameOverScreen" class="overlay-screen" aria-label="게임오버" hidden>
+        <div class="dialog result-dialog">
+          <p class="eyebrow">GAME OVER</p>
+          <h2>게임오버</h2>
+          <dl class="result-score">
+            <div>
+              <dt>점수</dt>
+              <dd id="finalScore">0</dd>
+            </div>
+            <div>
+              <dt>최고</dt>
+              <dd id="finalBest">0</dd>
+            </div>
+            <div>
+              <dt>최대콤보</dt>
+              <dd id="finalMaxCombo">0</dd>
+            </div>
+          </dl>
+          <button id="restartButton" class="primary-button" type="button">다시 시작</button>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
