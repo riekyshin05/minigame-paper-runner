@@ -268,10 +268,10 @@ button {
 }
 
 .hud {
-  width: min(920px, 100%);
+  width: min(1080px, 100%);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) auto;
   align-items: center;
   gap: 10px;
 }
@@ -298,8 +298,12 @@ button {
 }
 
 .hud strong {
-  font-size: clamp(1.3rem, 4vw, 2rem);
+  font-size: clamp(1.15rem, 3vw, 1.8rem);
   line-height: 1;
+}
+
+.timer-meter strong {
+  font-variant-numeric: tabular-nums;
 }
 
 .mistake-meter {
@@ -683,7 +687,7 @@ h2 {
 
 .result-score {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
   margin: 28px 0;
 }
@@ -713,19 +717,19 @@ h2 {
 }
 
 .active-paper.fly-up {
-  animation: flyUp 260ms ease-in forwards;
+  animation: flyUp 170ms ease-in forwards;
 }
 
 .active-paper.fly-right {
-  animation: flyRight 260ms ease-in forwards;
+  animation: flyRight 170ms ease-in forwards;
 }
 
 .active-paper.fly-left {
-  animation: flyLeft 260ms ease-in forwards;
+  animation: flyLeft 170ms ease-in forwards;
 }
 
 .active-paper.fly-down {
-  animation: flyDown 260ms ease-in forwards;
+  animation: flyDown 170ms ease-in forwards;
 }
 
 @keyframes wrongShake {
@@ -795,7 +799,7 @@ h2 {
   }
 
   .hud {
-    grid-template-columns: repeat(4, minmax(0, 1fr)) 52px;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) 52px;
     gap: 6px;
   }
 
@@ -813,6 +817,7 @@ h2 {
   }
 
   .result-score {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 7px;
   }
 
