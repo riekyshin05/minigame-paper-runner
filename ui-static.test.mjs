@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 
 const css = readFileSync(new URL("./styles.css", import.meta.url), "utf8");
 const html = readFileSync(new URL("./index.html", import.meta.url), "utf8");
+const runtime = readFileSync(new URL("./game.js", import.meta.url), "utf8");
 
 function zIndexFor(className) {
   const block = css.match(new RegExp(`\\.${className}\\s*\\{([\\s\\S]*?)\\}`));
@@ -49,4 +50,21 @@ test("combo gauge is available above the active paper", () => {
 test("max combo is shown in both HUD and game over result", () => {
   assert.match(html, /id="maxComboValue"/);
   assert.match(html, /id="finalMaxCombo"/);
+});
+
+test("time attack HUD and result values are available", () => {
+  assert.match(html, /id="timeValue"/);
+  assert.match(html, /id="clearedValue"/);
+  assert.match(html, /id="finalCleared"/);
+});
+
+test("paper flip animation is tuned for a faster pace", () => {
+  const animationMs = runtime.match(/const ANIMATION_MS = (\d+);/);
+
+  assert.ok(animationMs, "runtime should define ANIMATION_MS");
+  assert.ok(Number(animationMs[1]) <= 190, "runtime flip lock should be under 190ms");
+  assert.match(css, /animation: flyUp 1[0-9]{2}ms ease-in forwards;/);
+  assert.match(css, /animation: flyRight 1[0-9]{2}ms ease-in forwards;/);
+  assert.match(css, /animation: flyLeft 1[0-9]{2}ms ease-in forwards;/);
+  assert.match(css, /animation: flyDown 1[0-9]{2}ms ease-in forwards;/);
 });
