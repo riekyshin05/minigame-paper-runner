@@ -1,11 +1,13 @@
 (function startPaperRunner() {
   const {
     createGame,
+    expireGameIfTimeUp,
+    getRemainingTime,
     submitDirection,
   } = window.PaperRunnerCore;
 
   const BEST_SCORE_KEY = "paper-runner-best-score";
-  const ANIMATION_MS = 280;
+  const ANIMATION_MS = 180;
   const SWIPE_THRESHOLD = 36;
 
   const directionByKey = {
@@ -16,6 +18,8 @@
   };
 
   const refs = {
+    timeValue: document.getElementById("timeValue"),
+    clearedValue: document.getElementById("clearedValue"),
     scoreValue: document.getElementById("scoreValue"),
     bestValue: document.getElementById("bestValue"),
     maxComboValue: document.getElementById("maxComboValue"),
@@ -30,6 +34,8 @@
     stage: document.getElementById("stage"),
     startScreen: document.getElementById("startScreen"),
     gameOverScreen: document.getElementById("gameOverScreen"),
+    gameOverTitle: document.getElementById("gameOverTitle"),
+    finalCleared: document.getElementById("finalCleared"),
     finalScore: document.getElementById("finalScore"),
     finalBest: document.getElementById("finalBest"),
     finalMaxCombo: document.getElementById("finalMaxCombo"),
@@ -43,8 +49,10 @@
   let bestScore = readBestScore();
   let playing = false;
   let locked = true;
+  let ending = false;
   let swipeStart = null;
   let comboGaugeFrame = 0;
+  let timerFrame = 0;
   const audio = createAudioController();
 
   renderGame();
@@ -114,9 +122,10 @@
   }
 
   function startGame() {
-    game = createGame();
+    game = createGame({ startedAt: performance.now() });
     playing = true;
     locked = false;
+    ending = false;
     refs.startScreen.hidden = true;
     refs.gameOverScreen.hidden = true;
     refs.feedback.textContent = "";
@@ -125,6 +134,7 @@
     stopComboGauge();
     renderCombo();
     renderGame();
+    startTimer();
     audio.ensure();
     audio.startMusic();
     refs.stage.focus({ preventScroll: true });
@@ -138,6 +148,12 @@
     const result = submitDirection(game, direction, { now: performance.now() });
 
     if (result.ignored) {
+      if (result.timedOut) {
+        renderHud();
+        showTimeUpFeedback();
+        endGame("time");
+      }
+
       return;
     }
 
@@ -150,6 +166,10 @@
       startComboGauge();
       audio.playFlip(result.streak);
       flyPaper(result.previousPaper.direction).then(() => {
+        if (!playing || game.isGameOver) {
+          return;
+        }
+
         renderGame();
         locked = false;
       });
@@ -163,7 +183,7 @@
     audio.playWrong();
 
     if (game.isGameOver) {
-      endGame();
+      endGame("mistake");
     }
   }
 
@@ -194,9 +214,20 @@
     }, 420);
   }
 
-  function endGame() {
+  function showTimeUpFeedback() {
+    refs.feedback.textContent = "TIME UP";
+    refs.feedback.classList.add("is-visible");
+  }
+
+  function endGame(reason = "mistake") {
+    if (ending) {
+      return;
+    }
+
+    ending = true;
     playing = false;
     locked = true;
+    stopTimer();
     audio.playGameOver();
     audio.stopMusic();
 
@@ -208,6 +239,8 @@
     renderHud();
     renderCombo();
     stopComboGauge();
+    refs.gameOverTitle.textContent = reason === "time" ? "시간 종료" : "게임오버";
+    refs.finalCleared.textContent = String(game.clearedCount);
     refs.finalScore.textContent = String(game.score);
     refs.finalBest.textContent = String(bestScore);
     refs.finalMaxCombo.textContent = String(game.maxStreak);
@@ -235,6 +268,8 @@
   }
 
   function renderHud() {
+    refs.timeValue.textContent = formatTime(getRemainingTime(game, performance.now()));
+    refs.clearedValue.textContent = String(game.clearedCount);
     refs.scoreValue.textContent = String(game.score);
     refs.bestValue.textContent = String(Math.max(bestScore, game.score));
     refs.maxComboValue.textContent = String(game.maxStreak);
@@ -296,6 +331,43 @@
     comboGaugeFrame = 0;
     refs.comboGauge.hidden = true;
     refs.comboGaugeFill.style.transform = "scaleX(0)";
+  }
+
+  function startTimer() {
+    window.cancelAnimationFrame(timerFrame);
+
+    const tick = () => {
+      if (!playing || ending) {
+        timerFrame = 0;
+        return;
+      }
+
+      const now = performance.now();
+
+      if (expireGameIfTimeUp(game, now)) {
+        renderHud();
+        renderCombo();
+        stopComboGauge();
+        showTimeUpFeedback();
+        endGame("time");
+        timerFrame = 0;
+        return;
+      }
+
+      renderHud();
+      timerFrame = window.requestAnimationFrame(tick);
+    };
+
+    timerFrame = window.requestAnimationFrame(tick);
+  }
+
+  function stopTimer() {
+    window.cancelAnimationFrame(timerFrame);
+    timerFrame = 0;
+  }
+
+  function formatTime(remainingMs) {
+    return (Math.ceil(remainingMs / 100) / 10).toFixed(1);
   }
 
   function toggleMute() {
