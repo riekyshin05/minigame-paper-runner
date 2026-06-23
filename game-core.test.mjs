@@ -9,6 +9,8 @@ const {
   comboWindowForStreak,
   chooseNextPaper,
   createGame,
+  expireGameIfTimeUp,
+  getRemainingTime,
   submitDirection,
 } = require("./game-core.js");
 
@@ -66,9 +68,9 @@ test("correct answers build a streak for escalating feedback", () => {
 
 test("combo window gets shorter as the streak grows", () => {
   assert.equal(comboWindowForStreak(1), 1000);
-  assert.equal(comboWindowForStreak(2), 930);
-  assert.equal(comboWindowForStreak(5), 720);
-  assert.equal(comboWindowForStreak(20), 450);
+  assert.equal(comboWindowForStreak(2), 900);
+  assert.equal(comboWindowForStreak(5), 600);
+  assert.equal(comboWindowForStreak(20), 300);
 });
 
 test("higher streaks must be continued inside the shortened combo window", () => {
@@ -117,6 +119,47 @@ test("new games prepare upcoming papers for the visible stack", () => {
     game.upcomingPapers.map((paper) => paper.id),
     ["blue", "red", "blue"],
   );
+});
+
+test("new games default to a 60 second time attack limit", () => {
+  const game = createGame({ rng: fixedRng([0]) });
+
+  assert.equal(game.durationMs, 60_000);
+  assert.equal(game.startedAt, null);
+  assert.equal(getRemainingTime(game, 12_345), 60_000);
+});
+
+test("time attack games track remaining time and cleared papers", () => {
+  const game = createGame({ rng: fixedRng([0, 0]), startedAt: 1_000 });
+
+  const result = submitDirection(game, "up", { now: 12_500 });
+
+  assert.equal(result.correct, true);
+  assert.equal(result.timedOut, false);
+  assert.equal(game.clearedCount, 1);
+  assert.equal(getRemainingTime(game, 12_500), 48_500);
+});
+
+test("time limit ends the game and ignores late input", () => {
+  const game = createGame({ rng: fixedRng([0, 0]), startedAt: 1_000 });
+
+  const result = submitDirection(game, "up", { now: 61_000 });
+
+  assert.equal(result.ignored, true);
+  assert.equal(result.timedOut, true);
+  assert.equal(game.isGameOver, true);
+  assert.equal(game.clearedCount, 0);
+  assert.equal(game.score, 0);
+  assert.equal(getRemainingTime(game, 61_500), 0);
+});
+
+test("time limit can be expired without player input", () => {
+  const game = createGame({ rng: fixedRng([0]), startedAt: 2_000 });
+
+  assert.equal(expireGameIfTimeUp(game, 61_999), false);
+  assert.equal(game.isGameOver, false);
+  assert.equal(expireGameIfTimeUp(game, 62_000), true);
+  assert.equal(game.isGameOver, true);
 });
 
 test("correct answers advance to the first upcoming paper and refill the stack", () => {
