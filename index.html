@@ -25,6 +25,14 @@
 
       <section class="play-screen" aria-label="색종이 빼기 게임">
         <header class="hud" aria-label="게임 상태">
+          <div class="hud-metric timer-meter">
+            <span class="hud-label">시간</span>
+            <strong id="timeValue">60.0</strong>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-label">넘김</span>
+            <strong id="clearedValue">0</strong>
+          </div>
           <div class="hud-metric">
             <span class="hud-label">점수</span>
             <strong id="scoreValue">0</strong>
@@ -91,8 +99,12 @@
       <section id="gameOverScreen" class="overlay-screen" aria-label="게임오버" hidden>
         <div class="dialog result-dialog">
           <p class="eyebrow">GAME OVER</p>
-          <h2>게임오버</h2>
+          <h2 id="gameOverTitle">게임오버</h2>
           <dl class="result-score">
+            <div>
+              <dt>넘김</dt>
+              <dd id="finalCleared">0</dd>
+            </div>
             <div>
               <dt>점수</dt>
               <dd id="finalScore">0</dd>
